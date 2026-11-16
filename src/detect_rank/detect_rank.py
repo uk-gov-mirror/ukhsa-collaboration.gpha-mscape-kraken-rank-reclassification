@@ -214,7 +214,7 @@ def yield_entries(entries, total, indent=0):
         yield from yield_entries(j["children"], total, indent + 1)
 
 
-def create_aggregate(sample_id: str, lineages: str, bracken: str, report: str, database_path: str, out_dir: str):
+def create_aggregate(sample_id: str, report: str, database_path: str, out_dir: str):
     
     lineages, bracken = reformat_kraken_report(kraken_report=report,
                                                database_path=database_path,

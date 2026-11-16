@@ -81,8 +81,8 @@ def validate_family(family:str, taxaPlease):
 @app.command("aggregate-results")
 def aggregate_results_commands(
     sample_id: str = typer.Option(..., help="Sequence sample ID.", exists=True),
-    lineages: str = typer.Option(..., help="Lineages .tsv (taxid, lineage).", exists=True),
-    bracken: str = typer.Option(..., help="Bracken Lineages .tsv (taxid, count).", exists=True),
+    # lineages: str = typer.Option(..., help="Lineages .tsv (taxid, lineage).", exists=True),
+    # bracken: str = typer.Option(..., help="Bracken Lineages .tsv (taxid, count).", exists=True),
     report: str = typer.Option(..., help="Path to Kraken2 reports file.", exists=True),
     database_path: str = typer.Option(..., help="Path to the NCBI taxonomy directory.", exists=True),
     out_dir: str = typer.Option(..., help="Path to the output directory.", exists=False)
@@ -93,8 +93,6 @@ def aggregate_results_commands(
     
     create_aggregate(
         sample_id=sample_id,
-        lineages=lineages,
-        bracken=bracken,
         report=report,
         database_path=database_path,
         out_dir=out_dir,
