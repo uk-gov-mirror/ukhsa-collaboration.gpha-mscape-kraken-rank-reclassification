@@ -133,8 +133,8 @@ def reformat_kraken_report(kraken_report: str, database_path: str, out_dir: str)
             count = fields[2]
 
             bracken_counts[taxid] = int(count)
-
-            counts_out.write(f"{taxid}\t{count}\n")
+            counts_out.write(f"{count}\t{taxid}\n")
+            # counts_out.write(f"{taxid}\t{count}\n")
             taxa_out.write(f"{taxid}\n")
 
     with lineages_file.open("w") as lineage_out:
