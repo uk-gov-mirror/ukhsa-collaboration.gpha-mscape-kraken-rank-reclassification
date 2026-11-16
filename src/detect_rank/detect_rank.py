@@ -135,10 +135,6 @@ def reformat_kraken_report(kraken_report: str, database_path: str, out_dir: str)
     return lineage_file, counts_file
 
 
-
-
-
-
 """Script to create an aggregated count from lineage data."""
 ### taken from epi2ome/wf-metagenomics under the conditions of their license https://github.com/epi2me-labs/wf-metagenomics/blob/master/LICENSE and modified for this use case. copied from scylla https://github.com/artic-network/scylla/blob/2bbc52aa36811d8ab36918e4eda2f83b17d62a13/bin/aggregate_lineages_bracken.py 
 
@@ -218,7 +214,12 @@ def yield_entries(entries, total, indent=0):
         yield from yield_entries(j["children"], total, indent + 1)
 
 
-def create_aggregate(sample_id: str, lineages: str, bracken: str, report: str, out_dir: str):
+def create_aggregate(sample_id: str, lineages: str, bracken: str, report: str, database_path: str, out_dir: str):
+    
+    lineages, bracken = reformat_kraken_report(kraken_report=report,
+                                               database_path=database_path,
+                                               out_dir=out_dir)
+    
     """Run lineage aggregation algorithm."""
     bracken_counts = {}
     entries = {}
