@@ -116,11 +116,11 @@ def reformat_kraken_report(kraken_report: str, database_path: str, out_dir: str)
     bracken_counts: dict[str, int] = {}
 
     with (
-        kraken_report.open() as infile,
+        Path(kraken_report).open() as in_file,
         taxa_counts_file.open("w") as counts_out,
         taxa_file.open("w") as taxa_out,
     ):
-        for line_number, line in enumerate(infile):
+        for line_number, line in enumerate(in_file):
             if line_number < 2:
                 continue
 
