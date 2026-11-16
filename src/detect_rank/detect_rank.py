@@ -9,18 +9,7 @@ __version__ = "1.0.1"
 
 
 ranks = ["Species", "Genus", "Family", "Order", "Kingdom", "Phylum"]
-# Families = ["Archaea", "Bacteria", "Eukaryote", "Fungi", "Phage", "Virus"]
-
-
-# TODO. use TaxaPlease database to create the ranks and family lists. Therefore stay consistent with any updates
-
-
-def get_ranks():
-    pass
-
-
-def get_families():
-    pass
+# domain = ["Archaea", "Bacteria", "Eukaryote", "Fungi", "Phage", "Virus"]
 
 
 def load_report(report_path: str) -> pd.DataFrame:
@@ -40,7 +29,7 @@ def search_rank(df: pd.DataFrame, rank: ranks) -> pd.DataFrame:
     return df_rank
 
 
-def which_family(df: pd.DataFrame, choice: str, tp_func) -> pd.DataFrame:
+def which_microbe(df: pd.DataFrame, choice: str, tp_func) -> pd.DataFrame:
     col = f"is_{choice}"
     df = df.assign(**{col: df["taxid"].apply(tp_func)})
     df = df[df[col].astype(str).str.lower().eq("true")]
@@ -69,26 +58,26 @@ def create_json(sample_id: str, rank: str, df_genus: pd.DataFrame, df_species: p
     outfile.write_text(json.dumps(json_setup), encoding="utf-8")
 
 
-def run_detection(sample_id: str, report_path: str, database_path: str, family:str, out_dir:str, tp_func):
+def run_detection(sample_id: str, report_path: str, database_path: str, microbe:str, out_dir:str, tp_func):
     print("running")
     df = load_report(report_path=report_path)
     
     df_genus_level_detection = search_rank(df=df,
                                            rank="Genus")
     
-    df_genus_level_detection = which_family(df=df_genus_level_detection,
-                                            choice=family,
+    df_genus_level_detection = which_microbe(df=df_genus_level_detection,
+                                            choice=microbe,
                                             tp_func=tp_func)
     
     df_species_level_detection = search_rank(df=df,
                                              rank="Species")
     
-    df_species_level_detection = which_family(df=df_species_level_detection,
-                                              choice=family,
+    df_species_level_detection = which_microbe(df=df_species_level_detection,
+                                              choice=microbe,
                                               tp_func=tp_func)
 
     create_json(sample_id=sample_id,
-                rank=family,
+                rank=microbe,
                 df_genus= df_genus_level_detection,
                 df_species=df_species_level_detection,
                 out_dir=out_dir)

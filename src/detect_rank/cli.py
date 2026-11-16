@@ -36,8 +36,9 @@ def detect_rank_commands(
     sample_id: str = typer.Option(..., help="Sequence sample ID", exists=True),
     report: str = typer.Option(..., help="Path to Kraken2 reports file", exists=True),
     results: str = typer.Option(..., help="Path to Kraken2 results file", exists=True),
-    family: str = typer.Option(..., help="Family to search for", exists=True, callback=normalize_choice),
-    database: str = typer.Option(..., help="Path to the TaxaPlease database", exists=True),
+    microbe: str = typer.Option(..., help="Microbe to search for", exists=True, callback=normalize_choice),
+    tp_database: str = typer.Option(..., help="Path to the TaxaPlease database", exists=True),
+    ncbi_database: str = typer.Option(..., help="Path to the NCBI taxonomy directory.", exists=True),
     out_dir: str = typer.Option(..., help="Path to the output directory", exists=False)
     ):
     
@@ -45,20 +46,27 @@ def detect_rank_commands(
     log_file = Path(f"{out_dir}/logfile.txt")
     set_up_logger(log_file)
     
-    taxaPlease = TaxaPlease(database=database)
+    taxaPlease = TaxaPlease(database=tp_database)
 
-    family_choices, tp_func = validate_family(family=family,
+    microbe_choices, tp_func = validate_microbe(microbe=microbe,
                                               taxaPlease=taxaPlease)
     
     run_detection(sample_id=sample_id,
                   report_path=report,
-                  database_path=database,
-                  family=family,
+                  database_path=tp_database,
+                  microbe=microbe,
                   out_dir=out_dir,
                   tp_func=tp_func)
     
+    create_aggregate(
+        sample_id=sample_id,
+        report=report,
+        database_path=ncbi_database,
+        out_dir=out_dir,
+    )
+    
 
-def validate_family(family:str, taxaPlease):
+def validate_microbe(microbe:str, taxaPlease):
     allowed_choices = {
         method[2:].lower(): getattr(taxaPlease, method)
         for method in dir(taxaPlease)
@@ -66,7 +74,7 @@ def validate_family(family:str, taxaPlease):
         and callable(getattr(taxaPlease, method))
     }
 
-    choice = family.lower()
+    choice = microbe.lower()
     
     if choice not in allowed_choices:
         raise typer.BadParameter(
