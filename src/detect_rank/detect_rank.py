@@ -98,41 +98,60 @@ def run_detection(sample_id: str, report_path: str, database_path: str, family:s
 
 
 def reformat_kraken_report(kraken_report: str, database_path: str, out_dir: str):
+    """Replicates:
 
+            cut -f5,3 | tail -n+3 > _taxacounts.txt
+            cut -f5   | tail -n+3 > _taxa.txt
+            taxonkit lineage -R _taxa.txt > _lineages.txt
+
+        Returns:
+            (_taxacounts.txt, _taxa.txt, _lineages.txt)
+    """
+        
     out_dir = Path(out_dir)
     taxa_file = out_dir / "_taxa.txt"
-    counts_file = out_dir / "_taxacounts.txt"
-    lineage_file = out_dir / "_lineages.txt"
+    taxa_counts_file = out_dir / "_taxacounts.txt"
+    lineages_file = out_dir / "_lineages.txt"
+
+    bracken_counts: dict[str, int] = {}
 
     with (
-        Path(kraken_report).open() as in_file,
+        kraken_report.open() as infile,
+        taxa_counts_file.open("w") as counts_out,
         taxa_file.open("w") as taxa_out,
-        counts_file.open("w") as counts_out,
     ):
-        for line_number, line in enumerate(in_file):
+        for line_number, line in enumerate(infile):
             if line_number < 2:
                 continue
+
             fields = line.rstrip("\n").split("\t")
-            taxid = fields[4]      # cut -f5
-            count = fields[2]      # cut -f3
-            taxa_out.write(f"{taxid}\n")
+
+            if len(fields) < 5:
+                continue
+
+            taxid = fields[4]
+            count = fields[2]
+
+            bracken_counts[taxid] = int(count)
+
             counts_out.write(f"{taxid}\t{count}\n")
-    
-    with lineage_file.open("w") as outfile:
+            taxa_out.write(f"{taxid}\n")
+
+    with lineages_file.open("w") as lineage_out:
         subprocess.run(
             [
                 "taxonkit",
                 "lineage",
                 "--data-dir",
-                database_path,
+                str(database_path),
                 "-R",
                 str(taxa_file),
             ],
-            stdout=outfile,
+            stdout=lineage_out,
             check=True,
         )
-    
-    return lineage_file, counts_file
+
+    return taxa_counts_file, taxa_file, lineages_file
 
 
 """Script to create an aggregated count from lineage data."""
@@ -216,7 +235,7 @@ def yield_entries(entries, total, indent=0):
 
 def create_aggregate(sample_id: str, report: str, database_path: str, out_dir: str):
     
-    lineages, bracken = reformat_kraken_report(kraken_report=report,
+    bracken, taxa, lineages = reformat_kraken_report(kraken_report=report,
                                                database_path=database_path,
                                                out_dir=out_dir)
     
