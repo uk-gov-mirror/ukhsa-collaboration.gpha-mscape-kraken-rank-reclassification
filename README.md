@@ -57,6 +57,7 @@ cd gpha-mscape-kraken-rank-reclassification
 conda create -n kraken-reports
 conda activate kraken-reports
 pip install .
+mamba install -c bioconda taxonkit
 ```
 
 > [!Tip]
