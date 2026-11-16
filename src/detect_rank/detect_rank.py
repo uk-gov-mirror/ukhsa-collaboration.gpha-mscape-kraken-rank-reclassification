@@ -1,4 +1,5 @@
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -94,6 +95,49 @@ def run_detection(sample_id: str, report_path: str, database_path: str, family:s
     
     
 #### 
+
+
+def reformat_kraken_report(kraken_report: str, database_path: str, out_dir: str):
+
+    out_dir = Path(out_dir)
+    taxa_file = out_dir / "_taxa.txt"
+    counts_file = out_dir / "_taxacounts.txt"
+    lineage_file = out_dir / "_lineages.txt"
+
+    with (
+        Path(kraken_report).open() as in_file,
+        taxa_file.open("w") as taxa_out,
+        counts_file.open("w") as counts_out,
+    ):
+        for line_number, line in enumerate(in_file):
+            if line_number < 2:
+                continue
+            fields = line.rstrip("\n").split("\t")
+            taxid = fields[4]      # cut -f5
+            count = fields[2]      # cut -f3
+            taxa_out.write(f"{taxid}\n")
+            counts_out.write(f"{taxid}\t{count}\n")
+    
+    with lineage_file.open("w") as outfile:
+        subprocess.run(
+            [
+                "taxonkit",
+                "lineage",
+                "--data-dir",
+                database_path,
+                "-R",
+                str(taxa_file),
+            ],
+            stdout=outfile,
+            check=True,
+        )
+    
+    return lineage_file, counts_file
+
+
+
+
+
 
 """Script to create an aggregated count from lineage data."""
 ### taken from epi2ome/wf-metagenomics under the conditions of their license https://github.com/epi2me-labs/wf-metagenomics/blob/master/LICENSE and modified for this use case. copied from scylla https://github.com/artic-network/scylla/blob/2bbc52aa36811d8ab36918e4eda2f83b17d62a13/bin/aggregate_lineages_bracken.py 
