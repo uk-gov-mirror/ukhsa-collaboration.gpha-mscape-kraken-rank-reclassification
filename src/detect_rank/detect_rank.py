@@ -97,7 +97,7 @@ def run_detection(sample_id: str, report_path: str, database_path: str, family:s
 #### 
 
 
-def reformat_kraken_report(kraken_report: str, database_path: str, out_dir: str):
+def reformat_kraken_report(sample_id: str, kraken_report: str, database_path: str, out_dir: str):
     """Replicates:
 
             cut -f5,3 | tail -n+3 > _taxacounts.txt
@@ -109,9 +109,9 @@ def reformat_kraken_report(kraken_report: str, database_path: str, out_dir: str)
     """
         
     out_dir = Path(out_dir)
-    taxa_file = out_dir / "_taxa.txt"
-    taxa_counts_file = out_dir / "_taxacounts.txt"
-    lineages_file = out_dir / "_lineages.txt"
+    taxa_file = out_dir / f"{sample_id}_taxa.txt"
+    taxa_counts_file = out_dir / f"{sample_id}_taxacounts.txt"
+    lineages_file = out_dir / f"{sample_id}_lineages.txt"
 
     bracken_counts: dict[str, int] = {}
 
@@ -235,9 +235,10 @@ def yield_entries(entries, total, indent=0):
 
 def create_aggregate(sample_id: str, report: str, database_path: str, out_dir: str):
     
-    bracken, taxa, lineages = reformat_kraken_report(kraken_report=report,
-                                               database_path=database_path,
-                                               out_dir=out_dir)
+    bracken, taxa, lineages = reformat_kraken_report(sample_id=sample_id,
+                                                     kraken_report=report,
+                                                     database_path=database_path,
+                                                     out_dir=out_dir)
     
     """Run lineage aggregation algorithm."""
     bracken_counts = {}
